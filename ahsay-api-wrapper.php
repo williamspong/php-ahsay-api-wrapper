@@ -5,7 +5,8 @@ PHP API wrapper for AhsayOBS. Version 1.10
 
 Copyright (C)  2015
 Hannes Van de Vel (h@nnes.be),
-Richard Bishop (ahsayapi@uchange.co.uk).
+Richard Bishop (ahsayapi@uchange.co.uk),
+Edited by William Spong (info@fatmac.co.uk) for Ahsay version 7 compatibility.
 
 
 This program is free software; you can redistribute it and/or modify
@@ -174,14 +175,14 @@ class AhsayApiWrapper
     }
 
     // Get the IDs of each backup job for this set in reverse order
-    public function getBackupSetJobIds($username, $backupset, $rev)
+    public function getBackupSetJobIds($username, $backupset, $destinationid, $rev)
     {
         $rev = false;
 
         $this->debuglog("Getting list of backup job ids for user '$username', for backup set with id '$backupset'");
 
         // Get a list of all backup jobs for this backup set
-        $jobs = $this->getBackupJobsForSet($username, $backupset);
+        $jobs = $this->getBackupJobsForSet($username, $backupset, $destinationid);
 
         if (sizeof($jobs) <= 0) {
             throw new Exception("Could not run getUserBackupJobsForSet() in getBackupSetJobIds() for backup set id '$backupset'.");
@@ -195,23 +196,18 @@ class AhsayApiWrapper
         }
 
         // Sort in reverse?
-        if ($rev) {
-            rsort($backupJobs);
-        }
-        if (!$rev) {
-            sort($backupJobs);
-        }
+    rsort($backupJobs);
 
         return $backupJobs;
     }
 
     // Get the ID of the most recent job for this backup set
-    public function getMostRecentBackupJob($username, $backupset)
+    public function getMostRecentBackupJob($username, $backupset, $destinationid)
     {
         $this->debuglog("Running getMostRecentBackupJob() for backup set with id '$backupset'");
 
         // Get a list of all backup jobs for this backup set (in reverse order)
-        $jobs = $this->getBackupSetJobIds($username, $backupset, true);
+        $jobs = $this->getBackupSetJobIds($username, $backupset, $destinationid, true);
         if (!$jobs) {
             throw new Exception("Could not run getBackupSetJobIds() in getMostRecentBackupJob() for backup set id '$backupset'.");
         }
@@ -221,11 +217,11 @@ class AhsayApiWrapper
     }
 
     // Get all backup jobs for a particular user
-    public function getUserBackupJobDetails($username, $backupset, $backupjob)
+    public function getUserBackupJobDetails($username, $backupset, $destinationid, $backupjob)
     {
         $this->debuglog("Getting backup job details for user '$username', job id '$backupjob'");
 
-        $url = "/obs/api/GetBackupJobReport.do?LoginName=$username&BackupSetID=$backupset&BackupJobID=$backupjob";
+        $url = "/obs/api/GetBackupJobReport.do?LoginName=$username&BackupSetID=$backupset&BackupJobID=$backupjob&DestinationID=$destinationid";
         $result = $this->runQuery($url);
 
         // If that didn't happen
